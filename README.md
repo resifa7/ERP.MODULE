@@ -1,1 +1,2 @@
-# ERP.MODULE
+# Omniflow-Starter
+Module's starter pack
