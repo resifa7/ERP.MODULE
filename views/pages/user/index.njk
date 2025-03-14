@@ -209,7 +209,7 @@
 
 <script>
   document.getElementById("btnDownloadData").addEventListener("click", () => {
-    window.location.href = "/user/download";
+    window.location.href = "/user/download"
     Toastify({
       text: "Download berhasil! Silakan cek folder download Anda.",
       duration: 5000,
@@ -222,18 +222,18 @@
         marginTop: "50px",
       },
       onClick: function () {}, // Callback after click
-    }).showToast();
-  });
+    }).showToast()
+  })
 </script>
 
 {% endblock %} {% block scripts %}
 <script>
   $(document).ready(function () {
-    $("#datatablesSimple").DataTable();
-  });
+    $("#datatablesSimple").DataTable()
+  })
 
   $("#btnDownloadTemplate").on("click", function () {
-    window.location.href = "/user/download-template";
+    window.location.href = "/user/download-template"
     Toastify({
       text: "Download berhasil! Silakan cek folder download Anda.",
       duration: 5000,
@@ -246,7 +246,7 @@
         marginTop: "50px",
       },
       onClick: function () {}, // Callback after click
-    }).showToast();
-  });
+    }).showToast()
+  })
 </script>
 {% endblock %}

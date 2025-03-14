@@ -1,0 +1,42 @@
+{% extends "layout/masterLayout.njk" %}
+{% block content %}
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Detail Inventory</h1>
+        <div class="row">
+            <div class="col-12">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-table me-1"></i>
+                    Inventory Details
+                </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <strong>Name:</strong>
+                                    {{ inventory.nama }}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Description:</strong>
+                                    {{ inventory.deskripsi }}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Status:</strong>
+                                    {% if inventory.status == 'Tersedia' %}
+                                        <span class="badge bg-success text-dark" style="width: 100px;">{{ inventory.status }}</span>
+                                    {% elif inventory.status == 'Maintenance' %}
+                                        <span class="badge bg-warning text-dark" style="width: 100px;">{{ inventory.status }}</span>
+                                    {% elif inventory.status == 'Lost' %}
+                                        <span class="badge bg-danger text-dark" style="width: 100px;">{{ inventory.status }}</span>
+                                    {% elif inventory.status == 'Dipinjam' %}
+                                        <span class="badge bg-info text-dark" style="width: 100px;">{{ inventory.status }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

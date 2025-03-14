@@ -1,0 +1,81 @@
+{% extends "layout/masterLayout.njk" %}
+{% block content %}
+<div class="container px-4">
+    <form action="/inventory/update/{{ inventory.id }}" method="post" class="shadow p-3 rounded" id="editInventoryForm">
+        <h2 class="mb-3">Tambah Barang Baru</h2>
+        <div class="mb-2">
+            <label for="nama" class="form-label">Nama Barang:</label>
+            <input type="text" class="form-control" id="nama" name="nama" required value="{{ inventory.nama }}" placeholder= "Masukkan nama barang">
+        </div>
+        <div class="mb-2">
+            <label for="deskripsi" class="form-label">Deskripsi:</label>
+            <textarea class="form-control" id="deskripsi" name="deskripsi" rows="2" required>{{ inventory.deskripsi }}</textarea>
+        </div>
+        <div class="mb-2">
+            <label for="tanggal_pembelian" class="form-label">Tanggal Pembelian:</label>
+            <input type="date" class="form-control" id="tanggal_pembelian" name="tanggal_pembelian" required value="{{ inventory.tanggal_pembelian }}" placeholder="Pilih tanggal pembelian">
+        </div>
+        <div class="mb-2">
+            <label for="harga_pembelian" class="form-label">Harga Beli:</label>
+            <input type="text" class="form-control" id="harga_pembelian" name="harga_pembelian" required value="{{ inventory.harga_pembelian }}" placeholder="Masukkan harga beli">
+        </div>
+        <div class="mb-2">
+            <label for="status" class="form-label">Status:</label>
+            <select class="form-select" id="status" name="status" required>
+                <option value="Tersedia" {% if status == "Tersedia" %}selected{% endif %}>Tersedia</option>
+                <option value="Maintenance" {% if status == "Maintenance" %}selected{% endif %}>Maintenance</option>
+                <option value="Lost" {% if status == "Lost" %}selected{% endif %}>Lost</option>
+                <option value="Dipinjam" {% if status == "Dipinjam" %}selected{% endif %}>Dipinjam</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Edit Barang</button>
+    </form>
+</div>
+
+<script>
+    const hargaInput = document.getElementById('harga_pembelian');
+
+    // Format angka dengan delimiter saat pengguna mengetik
+    hargaInput.addEventListener('input', function(e) {
+        // Hapus semua karakter non-angka
+        let value = e.target.value.replace(/\D/g, '');
+        
+        // Tambahkan delimiter titik setiap 3 digit dari kanan
+        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+        // Update nilai di input
+        e.target.value = value;
+    });
+
+    // Handle form submission with SweetAlert2 confirmation
+    document.getElementById('editInventoryForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent immediate form submission
+
+        // Remove delimiter from harga_pembelian before confirmation
+        const rawValue = hargaInput.value.replace(/\./g, '');
+        hargaInput.value = rawValue;
+
+        // Get form values for confirmation message
+        const nama = document.getElementById('nama').value;
+
+        // Show SweetAlert2 confirmation
+        Swal.fire({
+            title: 'Konfirmasi Penyimpanan',
+            text: `Apakah Anda yakin ingin menyimpan barang "${nama}"?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Simpan!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // If confirmed, submit the form
+                this.submit();
+                // Optionally, show success message after submission (requires server response handling)
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% block script %}{% endblock %}
