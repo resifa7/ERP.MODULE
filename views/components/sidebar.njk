@@ -24,16 +24,15 @@
         <div class="nav">
             {% for item in sidebarMenu %}
                 {% if item.submenus %}
-                    <a class="nav-link collapsed {% if url.includes(item.activeCheck) %}show{% endif %}" href="#" 
+                    <a class="nav-link collapsed" href="#" 
                         data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" 
-                        aria-expanded="{% if url.includes(item.activeCheck) %}true{% else %}false{% endif %}" 
-                        aria-controls="collapse{{ loop.index }}">
+                        aria-expanded="false" aria-controls="collapse{{ loop.index }}">
                         <i class="{{ item.icon }} me-2"></i> {{ item.title }}
                         <div class="sb-sidenav-collapse-arrow">
                             <i class="fas fa-angle-down"></i>
                         </div>
                     </a>
-                    <div class="collapse {% if url.includes(item.activeCheck) %}show{% endif %}" id="collapse{{ loop.index }}" 
+                    <div class="collapse" id="collapse{{ loop.index }}" 
                         aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
                         <nav class="sb-sidenav-menu-nested nav">
                             {% for submenu in item.submenus %}
@@ -57,20 +56,31 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    let openMenus = JSON.parse(localStorage.getItem("openMenus")) || {};
+    let storedMenu = localStorage.getItem("openedMenu");
+
+    document.querySelectorAll(".collapse").forEach(collapse => {
+        collapse.classList.remove("show");
+    });
+
+    if (storedMenu) {
+        let activeMenu = document.getElementById(storedMenu);
+        if (activeMenu) {
+            activeMenu.classList.add("show");
+        }
+    }
 
     document.querySelectorAll(".nav-link[data-bs-toggle='collapse']").forEach(menu => {
         let targetId = menu.getAttribute("data-bs-target").substring(1);
         let collapseElement = document.getElementById(targetId);
 
-        if (openMenus[targetId]) {
-            collapseElement.classList.add("show");
-        }
+        collapseElement.addEventListener("shown.bs.collapse", function () {
+            localStorage.setItem("openedMenu", targetId);
+        });
 
-        menu.addEventListener("click", function () {
-            let isOpen = collapseElement.classList.contains("show");
-            openMenus[targetId] = !isOpen;
-            localStorage.setItem("openMenus", JSON.stringify(openMenus));
+        collapseElement.addEventListener("hidden.bs.collapse", function () {
+            if (localStorage.getItem("openedMenu") === targetId) {
+                localStorage.removeItem("openedMenu");
+            }
         });
     });
 });

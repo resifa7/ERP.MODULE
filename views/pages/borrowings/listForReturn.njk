@@ -105,7 +105,6 @@
         let returnForm = document.getElementById("returnForm");
         let returnModal = new bootstrap.Modal(document.getElementById("returnModal"));
         let returnDateInput = document.getElementById("return_date");
-        let borrowItemName = document.getElementById("borrowItemName");
         let borrowIdInput = document.getElementById("borrow_id");
 
         let today = new Date().toISOString().split("T")[0];
@@ -116,9 +115,7 @@
                 let borrowId = this.getAttribute("data-borrow-id");
                 let itemName = this.getAttribute("data-borrow-name");
 
-                borrowItemName.textContent = itemName;
                 borrowIdInput.value = borrowId;
-
                 returnForm.action = `/borrowings/return/${borrowId}`;
 
                 returnModal.show();
