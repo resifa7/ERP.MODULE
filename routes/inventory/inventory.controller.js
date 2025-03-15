@@ -335,6 +335,92 @@ const updateInventory = async (req, res) => {
     }
 };
 
+const downloadTemplate = async (req, res) => {
+    try {
+        const workbook = new Excel.Workbook();
+        const worksheet = workbook.addWorksheet("Template");
+
+        worksheet.columns = [
+            { header: "Nama", key: "nama", width: 30 },
+            { header: "Deskripsi", key: "deskripsi", width: 50 },
+            { header: "Tanggal Pembelian (YYYY-MM-DD)", key: "tanggal_pembelian", width: 40 },
+            { header: "Harga Pembelian", key: "harga_pembelian", width: 20 }
+        ];
+
+        worksheet.getRow(1).font = { bold: true };
+
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", "attachment; filename=template_inventory.xlsx");
+
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error("Error downloading template:", error);
+        res.status(500).send("Internal Server Error");
+    }
+};
+
+const bulkInsertInventory = async (req, res) => {
+    if (!req.file) {
+        req.flash("error", "No file uploaded");
+        return res.redirect("/inventory/overview");
+    }
+
+    try {
+        const workbook = new Excel.Workbook();
+        await workbook.xlsx.readFile(req.file.path);
+        const worksheet = workbook.worksheets[0];
+
+        let dataToInsert = [];
+
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) return;
+
+            const nama = row.getCell(1).value;
+            const deskripsi = row.getCell(2).value;
+            let tanggal_pembelian = row.getCell(3).value;
+            const harga_pembelian = parseInt(row.getCell(4).value) || 0;
+
+            if (!nama || !tanggal_pembelian || isNaN(harga_pembelian)) {
+                console.warn(`Skipping row ${rowNumber}: invalid data`);
+                return;
+            }
+
+            if (typeof tanggal_pembelian === "number") {
+                const excelDateBase = new Date(1899, 11, 30); 
+                tanggal_pembelian = new Date(excelDateBase.getTime() + (tanggal_pembelian * 86400000))
+                    .toISOString()
+                    .split("T")[0]; 
+            } else if (typeof tanggal_pembelian === "string") {
+                tanggal_pembelian = new Date(tanggal_pembelian).toISOString().split("T")[0];
+            }
+
+            dataToInsert.push([nama, deskripsi, tanggal_pembelian, harga_pembelian]);
+        });
+
+        if (dataToInsert.length === 0) {
+            req.flash("error", "No valid data to insert");
+            fs.unlinkSync(req.file.path);
+            return res.redirect("/inventory/overview");
+        }
+
+        const [result] = await db.query(
+            "INSERT INTO inventories (nama, deskripsi, tanggal_pembelian, harga_pembelian) VALUES ?",
+            [dataToInsert]
+        );
+
+        fs.unlinkSync(req.file.path);
+
+        req.flash("success", `${result.affectedRows} inventory items added successfully`);
+        res.redirect("/inventory/overview");
+    } catch (error) {
+        console.error("Error in bulkInsertInventory:", error);
+        req.flash("error", "Failed to process file");
+        res.redirect("/inventory/overview");
+    }
+};
+
+
 module.exports = {
     getOverviewInventory,
     downloadInvData,
@@ -347,4 +433,6 @@ module.exports = {
     LoadInventoryDetail,
     generateQrCode,
     updateInventory,
+    downloadTemplate,
+    bulkInsertInventory,
 };
