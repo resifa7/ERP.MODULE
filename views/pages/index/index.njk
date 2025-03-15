@@ -6,9 +6,557 @@
       Selamat datang di halaman beranda Omniflow
     </li>
   </ol>
+  
   <div class="row">
-    <h1>Selamat datang di Dashboard</h1>
+    <div class="col-xl-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <i class="fas fa-users me-1"></i>
+              Daftar Pengguna
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="d-flex me-2">
+                <input type="text" class="form-control form-control-sm me-2" id="userSearchInput" name="search" 
+                       placeholder="Cari pengguna..." value="{{ userSearch }}" style="width: 150px;">
+              </div>
+              <select class="form-select form-select-sm" id="userLimit" style="width: 80px;">
+                <option value="5" {% if userLimit == 5 %}selected{% endif %}>5</option>
+                <option value="10" {% if userLimit == 10 %}selected{% endif %}>10</option>
+                <option value="25" {% if userLimit == 25 %}selected{% endif %}>25</option>
+                <option value="50" {% if userLimit == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if userLimit == 100 %}selected{% endif %}>100</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Username</th>
+                <th>Role</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if users and users.length > 0 %}
+                {% for user in users %}
+                  <tr>
+                    <td>{{ ((userPage - 1) * userLimit) + loop.index }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="3" class="text-center">Tidak ada data pengguna</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+          
+          {% if userTotalPages > 1 %}
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+              Menampilkan {{ ((userPage - 1) * userLimit) + 1 }} - {{ ((userPage - 1) * userLimit) + users.length }} dari {{ userTotal }} data
+            </div>
+            <nav aria-label="User pagination">
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {% if userPage == 1 %}disabled{% endif %}">
+                  <a class="page-link" href="#" onclick="changePage('user', 1)" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                  </a>
+                </li>
+                <li class="page-item {% if userPage == 1 %}disabled{% endif %}">
+                  <a class="page-link" href="#" onclick="changePage('user', {{ userPage - 1 }})" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+                
+                {% for i in range(1, userTotalPages + 1) %}
+                  {% if 
+                    i == 1 or 
+                    i == userTotalPages or 
+                    (i >= userPage - 1 and i <= userPage + 1)
+                  %}
+                    <li class="page-item {% if userPage == i %}active{% endif %}">
+                      <a class="page-link" href="#" onclick="changePage('user', {{ i }})">{{ i }}</a>
+                    </li>
+                  {% elif 
+                    (i == 2 and userPage > 3) or 
+                    (i == userTotalPages - 1 and userPage < userTotalPages - 2)
+                  %}
+                    <li class="page-item disabled">
+                      <a class="page-link" href="#">...</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {% if userPage == userTotalPages %}disabled{% endif %}">
+                  <a class="page-link" href="#" onclick="changePage('user', {{ userPage + 1 }})" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+                <li class="page-item {% if userPage == userTotalPages %}disabled{% endif %}">
+                  <a class="page-link" href="#" onclick="changePage('user', {{ userTotalPages }})" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-6">
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <i class="fas fa-boxes me-1"></i>
+              Daftar Barang
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="d-flex me-2">
+                <input type="text" class="form-control form-control-sm me-2" id="inventorySearchInput" name="search" 
+                       placeholder="Cari barang..." value="{{ inventorySearch }}" style="width: 150px;">
+              </div>
+              <select class="form-select form-select-sm" id="inventoryLimit" style="width: 80px;">
+                <option value="5" {% if inventoryLimit == 5 %}selected{% endif %}>5</option>
+                <option value="10" {% if inventoryLimit == 10 %}selected{% endif %}>10</option>
+                <option value="25" {% if inventoryLimit == 25 %}selected{% endif %}>25</option>
+                <option value="50" {% if inventoryLimit == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if inventoryLimit == 100 %}selected{% endif %}>100</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama Barang</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if inventories and inventories.length > 0 %}
+                {% for item in inventories %}
+                  <tr>
+                    <td>{{ ((inventoryPage - 1) * inventoryLimit) + loop.index }}</td>
+                    <td>{{ item.nama }}</td>
+                    <td>
+                      {% if item.status == 'Tersedia' %}
+                        <span class="badge bg-success">{{ item.status }}</span>
+                      {% elif item.status == 'Dipinjam' %}
+                        <span class="badge bg-warning text-dark">{{ item.status }}</span>
+                      {% elif item.status == 'Maintenance' %}
+                        <span class="badge bg-info">{{ item.status }}</span>
+                      {% else %}
+                        <span class="badge bg-danger">{{ item.status }}</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="3" class="text-center">Tidak ada data barang</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+          
+          {% if inventoryTotalPages > 1 %}
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+              Menampilkan {{ ((inventoryPage - 1) * inventoryLimit) + 1 }} - {{ ((inventoryPage - 1) * inventoryLimit) + inventories.length }} dari {{ inventoryTotal }} data
+            </div>
+            <nav aria-label="Inventory pagination">
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {% if inventoryPage == 1 %}disabled{% endif %}">
+                  <a class="page-link" href="#" onclick="changePage('inventory', 1)" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                  </a>
+                </li>
+                <li class="page-item {% if inventoryPage == 1 %}disabled{% endif %}">
+                  <a class="page-link" href="#" onclick="changePage('inventory', {{ inventoryPage - 1 }})" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+                
+                {% for i in range(1, inventoryTotalPages + 1) %}
+                  {% if 
+                    i == 1 or 
+                    i == inventoryTotalPages or 
+                    (i >= inventoryPage - 1 and i <= inventoryPage + 1)
+                  %}
+                    <li class="page-item {% if inventoryPage == i %}active{% endif %}">
+                      <a class="page-link" href="#" onclick="changePage('inventory', {{ i }})">{{ i }}</a>
+                    </li>
+                  {% elif 
+                    (i == 2 and inventoryPage > 3) or 
+                    (i == inventoryTotalPages - 1 and inventoryPage < inventoryTotalPages - 2)
+                  %}
+                    <li class="page-item disabled">
+                      <a class="page-link" href="#">...</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {% if inventoryPage == inventoryTotalPages %}disabled{% endif %}">
+                  <a class="page-link" href="#" onclick="changePage('inventory', {{ inventoryPage + 1 }})" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+                <li class="page-item {% if inventoryPage == inventoryTotalPages %}disabled{% endif %}">
+                  <a class="page-link" href="#" onclick="changePage('inventory', {{ inventoryTotalPages }})" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
+  <div class="row">
+    <div class="col-xl-6 col-md-12">
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-chart-bar me-1"></i>
+          Statistik Peminjaman dan Pengembalian (12 Bulan Terakhir)
+        </div>
+        <div class="card-body d-flex justify-content-center">
+          <canvas id="borrowingReturnChart" style="width: 100%; height: 300px;"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-6 col-md-12">
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-chart-pie me-1"></i>
+          Distribusi Status Barang
+        </div>
+        <div class="card-body d-flex justify-content-center">
+          <canvas id="inventoryStatusChart" style="width: 100%; height: 300px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-6 col-md-12">
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-users me-1"></i>
+          Pengguna yang Sering Meminjam
+        </div>
+        <div class="card-body d-flex justify-content-center">
+          <canvas id="frequentBorrowersChart" style="width: 100%; height: 300px;"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-xl-6 col-md-12">
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-box me-1"></i>
+          Barang yang Sering Dipinjam
+        </div>
+        <div class="card-body d-flex justify-content-center">
+          <canvas id="frequentlyBorrowedChart" style="width: 100%; height: 300px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    let userSearchTimer;
+    let inventorySearchTimer;
+    const searchDelay = 500; 
+    
+    function performUserSearch() {
+      const searchTerm = document.getElementById('userSearchInput').value;
+      const limit = document.getElementById('userLimit').value;
+      window.location.href = `/?userSearch=${encodeURIComponent(searchTerm)}&userPage=1&userLimit=${limit}&inventoryPage={{ inventoryPage }}&inventoryLimit={{ inventoryLimit }}&inventorySearch={{ inventorySearch }}`;
+    }
+    
+    function performInventorySearch() {
+      const searchTerm = document.getElementById('inventorySearchInput').value;
+      const limit = document.getElementById('inventoryLimit').value;
+      window.location.href = `/?inventorySearch=${encodeURIComponent(searchTerm)}&inventoryPage=1&inventoryLimit=${limit}&userPage={{ userPage }}&userLimit={{ userLimit }}&userSearch={{ userSearch }}`;
+    }
+
+    document.getElementById('userSearchInput').addEventListener('input', function() {
+      clearTimeout(userSearchTimer);
+      userSearchTimer = setTimeout(performUserSearch, searchDelay);
+    });
+    
+    document.getElementById('userLimit').addEventListener('change', function() {
+      const searchTerm = document.getElementById('userSearchInput').value;
+      const limit = this.value;
+      window.location.href = `/?userSearch=${encodeURIComponent(searchTerm)}&userPage=1&userLimit=${limit}&inventoryPage={{ inventoryPage }}&inventoryLimit={{ inventoryLimit }}&inventorySearch={{ inventorySearch }}`;
+    });
+    
+    document.getElementById('inventorySearchInput').addEventListener('input', function() {
+      clearTimeout(inventorySearchTimer);
+      inventorySearchTimer = setTimeout(performInventorySearch, searchDelay);
+    });
+    
+    document.getElementById('inventoryLimit').addEventListener('change', function() {
+      const searchTerm = document.getElementById('inventorySearchInput').value;
+      const limit = this.value;
+      window.location.href = `/?inventorySearch=${encodeURIComponent(searchTerm)}&inventoryPage=1&inventoryLimit=${limit}&userPage={{ userPage }}&userLimit={{ userLimit }}&userSearch={{ userSearch }}`;
+    });
+    
+    document.getElementById('userSearchInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(userSearchTimer);
+        performUserSearch();
+      }
+    });
+    
+    document.getElementById('inventorySearchInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        clearTimeout(inventorySearchTimer);
+        performInventorySearch();
+      }
+    });
+    
+    const borrowingCtx = document.getElementById('borrowingReturnChart');
+    if (borrowingCtx) {
+      try {
+        const months = {{ chartMonths | safe }};
+        const borrowingData = {{ chartBorrowingData | safe }};
+        const returnData = {{ chartReturnData | safe }};
+        
+        new Chart(borrowingCtx, {
+          type: 'bar',
+          data: {
+            labels: months,
+            datasets: [
+              {
+                label: 'Total Peminjaman',
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgb(54, 162, 235)',
+                borderWidth: 1,
+                data: borrowingData,
+              },
+              {
+                label: 'Total Pengembalian',
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgb(75, 192, 192)',
+                borderWidth: 1,
+                data: returnData,
+              }
+            ]
+          },
+          options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(tooltipItems) {
+                    return tooltipItems[0].label;
+                  },
+                  label: function(context) {
+                    return context.dataset.label + ': ' + context.raw + ' barang';
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing borrowing chart:', error);
+      }
+    }
+    
+    const statusCtx = document.getElementById('inventoryStatusChart');
+    if (statusCtx) {
+      try {
+        const statusLabels = {{ statusLabels | safe }};
+        const statusData = {{ statusData | safe }};
+        const statusColors = {{ statusColors | safe }};
+        
+        new Chart(statusCtx, {
+          type: 'pie',
+          data: {
+            labels: statusLabels,
+            datasets: [{
+              data: statusData,
+              backgroundColor: statusColors,
+              borderColor: statusColors.map(color => color.replace('0.8', '1')),
+              borderWidth: 1
+            }]
+          },
+          options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom',
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.raw || 0;
+                    const total = context.dataset.data.reduce((acc, curr) => acc + curr, 0);
+                    const percentage = Math.round((value / total) * 100);
+                    return `${label}: ${value} (${percentage}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing status chart:', error);
+      }
+    }
+    const borrowersCtx = document.getElementById('frequentBorrowersChart');
+    if (borrowersCtx) {
+      try {
+        const borrowerNames = {{ borrowerNames | safe }};
+        const borrowerCounts = {{ borrowerCounts | safe }};
+        
+        new Chart(borrowersCtx, {
+          type: 'bar',
+          data: {
+            labels: borrowerNames,
+            datasets: [{
+              label: 'Jumlah Peminjaman',
+              backgroundColor: 'rgba(255, 159, 64, 0.7)',
+              borderColor: 'rgb(255, 159, 64)',
+              borderWidth: 1,
+              data: borrowerCounts,
+            }]
+          },
+          options: {
+            maintainAspectRatio: false,
+            indexAxis: 'y',  
+            responsive: true,
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false  
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(tooltipItems) {
+                    return tooltipItems[0].label;
+                  },
+                  label: function(context) {
+                    return 'Jumlah Peminjaman: ' + context.raw + ' kali';
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing frequent borrowers chart:', error);
+      }
+    }
+    
+    const borrowedItemsCtx = document.getElementById('frequentlyBorrowedChart');
+    if (borrowedItemsCtx) {
+      try {
+        const itemNames = {{ itemNames | safe }};
+        const itemBorrowCounts = {{ itemBorrowCounts | safe }};
+        
+        new Chart(borrowedItemsCtx, {
+          type: 'bar',
+          data: {
+            labels: itemNames,
+            datasets: [{
+              label: 'Jumlah Peminjaman',
+              backgroundColor: 'rgba(153, 102, 255, 0.7)',
+              borderColor: 'rgb(153, 102, 255)',
+              borderWidth: 1,
+              data: itemBorrowCounts,
+            }]
+          },
+          options: {
+            maintainAspectRatio: false,
+            indexAxis: 'y',  
+            responsive: true,
+            scales: {
+              x: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false  
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(tooltipItems) {
+                    return tooltipItems[0].label;
+                  },
+                  label: function(context) {
+                    return 'Jumlah Peminjaman: ' + context.raw + ' kali';
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing frequently borrowed items chart:', error);
+      }
+    }
+  });
+  
+  function changePage(tableType, page) {
+    if (tableType === 'user') {
+      const searchTerm = document.getElementById('userSearchInput').value;
+      const limit = document.getElementById('userLimit').value;
+      window.location.href = `/?userSearch=${encodeURIComponent(searchTerm)}&userPage=${page}&userLimit=${limit}&inventoryPage={{ inventoryPage }}&inventoryLimit={{ inventoryLimit }}&inventorySearch={{ inventorySearch }}`;
+    } else {
+      const searchTerm = document.getElementById('inventorySearchInput').value;
+      const limit = document.getElementById('inventoryLimit').value;
+      window.location.href = `/?inventorySearch=${encodeURIComponent(searchTerm)}&inventoryPage=${page}&inventoryLimit=${limit}&userPage={{ userPage }}&userLimit={{ userLimit }}&userSearch={{ userSearch }}`;
+    }
+  }
+</script>
 {% endblock %}
