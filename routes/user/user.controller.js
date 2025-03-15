@@ -352,6 +352,202 @@ const downloadUserTemplate = (req, res) => {
   }
 };
 
+const getUserEditPage = async (req, res) => {
+  const userId = req.params.id;
+  
+  try {
+    const [users] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+    
+    if (users.length === 0) {
+      req.flash("error", "User tidak ditemukan!");
+      return res.redirect("/user/index");
+    }
+    
+    const user = users[0];
+    
+    if (req.session.user.role !== 'Admin' && req.session.user.id != userId) {
+      req.flash("error", "Anda tidak memiliki akses untuk mengedit user ini!");
+      return res.redirect("/user/index");
+    }
+    
+    res.render("pages/user/editUser", { 
+      user,
+      session: req.session
+    });
+  } catch (error) {
+    console.error("Error fetching user for edit:", error);
+    req.flash("error", "Terjadi kesalahan saat mengambil data user");
+    res.redirect("/user/index");
+  }
+};
+
+const updateUser = async (req, res) => {
+  const { userId, username, email, role, password } = req.body;
+  
+  const ip = getClientIP(req);
+  const parser = new UAParser(req.headers["user-agent"]);
+  const userAgentData = (() => {
+    const result = parser.getResult();
+    return {
+      deviceType: result.device.type || (result.device.vendor ? "Mobile" : "Desktop"),
+      browser: `${result.browser.name} ${result.browser.version}`,
+      platform: `${result.os.name} ${result.os.version}`,
+    };
+  })();
+
+  try {
+    const [users] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+    if (users.length === 0) {
+      req.flash("error", "User tidak ditemukan!");
+      return res.redirect("/user/index");
+    }
+    
+    if (req.session.user.role !== 'Admin' && req.session.user.id != userId) {
+      await log(
+        `User ${req.session.user.username} mencoba mengedit user ${userId} tanpa izin`,
+        LOG_LEVELS.WARN,
+        req.session.user.id,
+        userAgentData,
+        ip
+      );
+      req.flash("error", "Anda tidak memiliki akses untuk mengedit user ini!");
+      return res.redirect("/user/index");
+    }
+
+    const [existingUser] = await db.query(
+      "SELECT id FROM users WHERE email = ? AND id != ?",
+      [email, userId]
+    );
+
+    if (existingUser.length > 0) {
+      await log(
+        `Gagal mengedit user ${userId} karena email ${email} sudah digunakan`,
+        LOG_LEVELS.WARN,
+        req.session.user.id,
+        userAgentData,
+        ip
+      );
+      req.flash("error", "Email sudah digunakan oleh user lain!");
+      return res.redirect(`/user/edit/${userId}`);
+    }
+
+    let updateQuery = "UPDATE users SET username = ?, email = ?, updated_at = ?";
+    let updateParams = [username, email, new Date().toISOString().slice(0, 19).replace("T", " ")];
+
+    if (req.session.user.role === 'Admin') {
+      updateQuery += ", role = ?";
+      updateParams.push(role);
+    }
+
+    if (password && password.trim() !== '') {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateQuery += ", password_hash = ?";
+      updateParams.push(hashedPassword);
+    }
+
+    updateQuery += " WHERE id = ?";
+    updateParams.push(userId);
+
+    await db.query(updateQuery, updateParams);
+
+    await log(
+      `User ${username} (ID: ${userId}) berhasil diperbarui oleh ${req.session.user.username}`,
+      LOG_LEVELS.INFO,
+      req.session.user.id,
+      userAgentData,
+      ip
+    );
+
+    req.flash("success", "Data user berhasil diperbarui!");
+    res.redirect("/user/index");
+  } catch (error) {
+    console.error("Error updating user:", error);
+    await log(
+      `Error saat memperbarui user ${userId}: ${error.message}`,
+      LOG_LEVELS.ERROR,
+      req.session.user.id,
+      userAgentData,
+      ip
+    );
+    req.flash("error", "Terjadi kesalahan saat memperbarui data user");
+    res.redirect(`/user/edit/${userId}`);
+  }
+};
+
+const deleteUser = async (req, res) => {
+  const { userId } = req.body;
+  
+  const ip = getClientIP(req);
+  const parser = new UAParser(req.headers["user-agent"]);
+  const userAgentData = (() => {
+    const result = parser.getResult();
+    return {
+      deviceType: result.device.type || (result.device.vendor ? "Mobile" : "Desktop"),
+      browser: `${result.browser.name} ${result.browser.version}`,
+      platform: `${result.os.name} ${result.os.version}`,
+    };
+  })();
+
+  try {
+    if (req.session.user.role !== 'Admin') {
+      await log(
+        `User ${req.session.user.username} mencoba menghapus user ${userId} tanpa izin`,
+        LOG_LEVELS.WARN,
+        req.session.user.id,
+        userAgentData,
+        ip
+      );
+      req.flash("error", "Anda tidak memiliki akses untuk menghapus user!");
+      return res.redirect("/user/index");
+    }
+
+    if (req.session.user.id == userId) {
+      await log(
+        `User ${req.session.user.username} mencoba menghapus akun sendiri`,
+        LOG_LEVELS.WARN,
+        req.session.user.id,
+        userAgentData,
+        ip
+      );
+      req.flash("error", "Anda tidak dapat menghapus akun Anda sendiri!");
+      return res.redirect("/user/index");
+    }
+
+    const [users] = await db.query("SELECT username FROM users WHERE id = ?", [userId]);
+    if (users.length === 0) {
+      req.flash("error", "User tidak ditemukan!");
+      return res.redirect("/user/index");
+    }
+    
+    const username = users[0].username;
+
+    await db.query("DELETE FROM users WHERE id = ?", [userId]);
+
+    await log(
+      `User ${username} (ID: ${userId}) telah dihapus oleh ${req.session.user.username}`,
+      LOG_LEVELS.INFO,
+      req.session.user.id,
+      userAgentData,
+      ip
+    );
+
+    req.flash("success", "User berhasil dihapus!");
+    res.redirect("/user/index");
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    await log(
+      `Error saat menghapus user ${userId}: ${error.message}`,
+      LOG_LEVELS.ERROR,
+      req.session.user.id,
+      userAgentData,
+      ip
+    );
+    req.flash("error", "Terjadi kesalahan saat menghapus user");
+    res.redirect("/user/index");
+  }
+};
+
+
 module.exports = {
   getAllUsersPage,
   getUserOverviewPage,
@@ -359,4 +555,7 @@ module.exports = {
   uploadNewUser,
   createNewUser,
   downloadUserTemplate,
+  getUserEditPage,   
+  updateUser,        
+  deleteUser  
 };

@@ -13,4 +13,8 @@ router.get("/user/download-template", user.downloadUserTemplate);
 router.post("/user/upload", upload.single("fileUpload"), user.uploadNewUser);
 router.post("/user/create", user.createNewUser);
 
+router.get("/user/edit/:id", user.getUserEditPage);
+router.post("/user/edit", user.updateUser);
+router.post("/user/delete", user.deleteUser);
+
 module.exports = router;
