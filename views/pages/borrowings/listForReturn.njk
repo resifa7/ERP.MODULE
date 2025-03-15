@@ -1,0 +1,129 @@
+{% extends "layout/masterLayout.njk" %}
+{% block content %}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Riwayat Peminjaman</h1>
+
+    <!-- Flash Messages -->
+    {% if success %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+    {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Daftar Peminjaman
+        </div>
+        <div class="card-body">
+            <table id="borrowingsTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>ID Peminjaman</th>
+                        <th>Barang</th>
+                        <th>Peminjam</th>
+                        <th>Tanggal Pinjam</th>
+                        <th>Tanggal Kembali</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for borrow in borrowings %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>#{{ borrow.id }}</strong></td>
+                        <td>{{ borrow.inventory_name }}</td>
+                        <td>{{ borrow.username }}</td>
+                        <td>{{ borrow.borrow_date }}</td>
+                        <td>{{ borrow.return_date }}</td>
+                        <td>
+                            {% if borrow.status == 'Dipinjam' %}
+                                <span class="badge bg-warning text-dark">Dipinjam</span>
+                            {% else %}
+                                <span class="badge bg-success">Dikembalikan</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if borrow.status == 'Dipinjam' %}
+                                <button class="btn btn-success btn-sm return-btn" 
+                                        data-borrow-id="{{ borrow.id }}" 
+                                        data-borrow-name="{{ borrow.inventory_name }}">
+                                    Kembalikan
+                                </button>
+                            {% else %}
+                                <button class="btn btn-secondary btn-sm" disabled>Sudah Dikembalikan</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Pengembalian -->
+<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="returnModalLabel">Konfirmasi Pengembalian</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="returnForm" method="POST">
+                    <input type="hidden" id="borrow_id" name="borrow_id">
+                    <div class="mb-3">
+                        <label for="return_date" class="form-label">Tanggal Kembali</label>
+                        <input type="date" class="form-control" id="return_date" name="return_date" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Konfirmasi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let returnForm = document.getElementById("returnForm");
+        let returnModal = new bootstrap.Modal(document.getElementById("returnModal"));
+        let returnDateInput = document.getElementById("return_date");
+        let borrowItemName = document.getElementById("borrowItemName");
+        let borrowIdInput = document.getElementById("borrow_id");
+
+        let today = new Date().toISOString().split("T")[0];
+        returnDateInput.value = today;
+
+        document.querySelectorAll(".return-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let borrowId = this.getAttribute("data-borrow-id");
+                let itemName = this.getAttribute("data-borrow-name");
+
+                borrowItemName.textContent = itemName;
+                borrowIdInput.value = borrowId;
+
+                returnForm.action = `/borrowings/return/${borrowId}`;
+
+                returnModal.show();
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "layout/masterLayout.njk" %}
+{% block content %}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Riwayat Peminjaman</h1>
+
+    <!-- Flash Messages -->
+    {% if success %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+    {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Daftar Peminjaman
+        </div>
+        <div class="card-body">
+            <table id="borrowingsTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>ID Peminjaman</th>
+                        <th>Barang</th>
+                        <th>Peminjam</th>
+                        <th>Tanggal Pinjam</th>
+                        <th>Tanggal Kembali</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for borrow in borrowings %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>#{{ borrow.id }}</strong></td>
+                        <td>{{ borrow.inventory_name }}</td>
+                        <td>{{ borrow.username }}</td>
+                        <td>{{ borrow.borrow_date }}</td>
+                        <td>{{ borrow.return_date }}</td>
+                        <td>
+                            {% if borrow.status == 'Dipinjam' %}
+                                <span class="badge bg-warning text-dark">Dipinjam</span>
+                            {% else %}
+                                <span class="badge bg-success">Dikembalikan</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

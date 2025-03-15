@@ -1,50 +1,77 @@
-<nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-  <div class="sb-sidenav-menu">
-    <div class="nav">
-      <a class="nav-link" href="/"> Beranda </a>
-      <a class="nav-link collapsed {% if url.includes('/admin') %}show{% endif %}" href="#" data-bs-toggle="collapse"
-        data-bs-target="#collapseLayouts" aria-expanded="{% if url.includes('/admin') %}true{% else %}false{% endif %}"
-        aria-controls="collapseLayouts">
-        Modul
-        <div class="sb-sidenav-collapse-arrow">
-          <i class="fas fa-angle-down"></i>
-        </div>
-      </a>
-      <div class="collapse {% if url.includes('/admin') %}show{% endif %}" id="collapseLayouts"
-        aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-        <nav class="sb-sidenav-menu-nested nav">
-          <a class="nav-link" href="/admin/overview">Gambaran Umum</a>
-          <a class="nav-link" href="/admin/submodule">Sub Modul</a>
-        </nav>
-      </div>
-      {% if user.role in['Admin', 'Manager'] %}
+{% set sidebarMenu = [
+    { "title": "Beranda", "icon": "fas fa-home", "url": "/" },
+    { "title": "Modul", "icon": "fas fa-folder", "url": "#", "submenus": [
+        { "title": "Gambaran Umum", "url": "/admin/overview" },
+        { "title": "Sub Modul", "url": "/admin/submodule" }
+    ], "activeCheck": "/admin" }
+] %}
 
-        <!-- Inventory -->
-        <a class="nav-link collapsed {% if url.includes('/user') %}show{% endif %}" href="#" data-bs-toggle="collapse"
-        data-bs-target="#collapseLayoutsUser"
-        aria-expanded="{% if url.includes('/user') %}true{% else %}false{% endif %}"
-        aria-controls="collapseLayoutsUser">
-        Inventory
-        <div class="sb-sidenav-collapse-arrow">
-            <i class="fas fa-angle-down"></i>
-          </div>
-        </a>
-        <div class="collapse {% if url.includes('/user') %}show{% endif %}" id="collapseLayoutsUser"
-        aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-          <nav class="sb-sidenav-menu-nested nav">
-            <a class="nav-link" href="/inventory/overview">List Barang</a>
-            <a class="nav-link" href="/inventory/status">Status Barang</a>
-            <a class="nav-link" href="/inventory/rent">Buat Pinjaman</a>
-            <a class="nav-link" href="/inventory/return">Pengembalian barang</a>
-          </nav>
+{% if user.role in ['Admin', 'Manager'] %}
+    {% set sidebarMenu = sidebarMenu.concat([
+        { "title": "Inventory", "icon": "fas fa-boxes", "url": "#", "submenus": [
+            { "title": "List Barang", "url": "/inventory/overview" },
+            { "title": "Status Barang", "url": "/inventory/status" },
+            { "title": "Buat Pinjaman", "url": "/borrowings/add" },
+            { "title": "Pengembalian Pinjaman", "url": "/borrowings/return" }, 
+            { "title": "Riwayat Peminjaman", "url": "/borrowings" }
+        ], "activeCheck": "/inventory" },
+        { "title": "Log", "icon": "fas fa-history", "url": "/log/index" }
+    ]) %}
+{% endif %}
+
+<nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+    <div class="sb-sidenav-menu">
+        <div class="nav">
+            {% for item in sidebarMenu %}
+                {% if item.submenus %}
+                    <a class="nav-link collapsed {% if url.includes(item.activeCheck) %}show{% endif %}" href="#" 
+                        data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" 
+                        aria-expanded="{% if url.includes(item.activeCheck) %}true{% else %}false{% endif %}" 
+                        aria-controls="collapse{{ loop.index }}">
+                        <i class="{{ item.icon }} me-2"></i> {{ item.title }}
+                        <div class="sb-sidenav-collapse-arrow">
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                    </a>
+                    <div class="collapse {% if url.includes(item.activeCheck) %}show{% endif %}" id="collapse{{ loop.index }}" 
+                        aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                        <nav class="sb-sidenav-menu-nested nav">
+                            {% for submenu in item.submenus %}
+                                <a class="nav-link" href="{{ submenu.url }}">{{ submenu.title }}</a>
+                            {% endfor %}
+                        </nav>
+                    </div>
+                {% else %}
+                    <a class="nav-link" href="{{ item.url }}">
+                        <i class="{{ item.icon }} me-2"></i> {{ item.title }}
+                    </a>
+                {% endif %}
+            {% endfor %}
         </div>
-        <!-- Log -->
-        <a class="nav-link" href="/log/index"> Log </a>
-      {% endif %}
     </div>
-  </div>
-  <div class="sb-sidenav-footer">
-    <div class="small">Masuk Sebagai:</div>
-    <span class="fw-bold">{{ user.username }}</span>
-  </div>
+    <div class="sb-sidenav-footer">
+        <div class="small">Masuk Sebagai:</div>
+        <span class="fw-bold">{{ user.username }}</span>
+    </div>
 </nav>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let openMenus = JSON.parse(localStorage.getItem("openMenus")) || {};
+
+    document.querySelectorAll(".nav-link[data-bs-toggle='collapse']").forEach(menu => {
+        let targetId = menu.getAttribute("data-bs-target").substring(1);
+        let collapseElement = document.getElementById(targetId);
+
+        if (openMenus[targetId]) {
+            collapseElement.classList.add("show");
+        }
+
+        menu.addEventListener("click", function () {
+            let isOpen = collapseElement.classList.contains("show");
+            openMenus[targetId] = !isOpen;
+            localStorage.setItem("openMenus", JSON.stringify(openMenus));
+        });
+    });
+});
+</script>

@@ -87,12 +87,14 @@ const authRouter = require("./routes/auth/auth.router");
 const userRouter = require("./routes/user/user.router");
 const logRouter = require("./routes/log/log.router");
 const inventoryRouter = require("./routes/inventory/inventory.router");
+const borrowingRouter = require("./routes/borrowing/borrowing.router");
 
 app.use("/", authRouter);
 app.use("/", isLoggedIn, adminRouter);
 app.use("/", isLoggedIn, userRouter);
 app.use("/", isLoggedIn, logRouter);
 app.use("/", isLoggedIn, inventoryRouter);
+app.use("/", isLoggedIn, borrowingRouter);
 
 const errorHandler = require("./middlewares/errorHandler");
 app.use(errorHandler);

@@ -1,0 +1,50 @@
+{% extends "layout/masterLayout.njk" %}
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Tambah Peminjaman</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-plus me-1"></i>
+            Form Peminjaman
+        </div>
+        <div class="card-body">
+            <form action="/borrowings/add" method="POST">
+                <div class="mb-3">
+                    <label for="inventory_id" class="form-label">Barang</label>
+                    <select class="form-control" id="inventory_id" name="inventory_id" required>
+                        <option value="">Pilih Barang</option>
+                        {% for inventory in inventories %}
+                            <option value="{{ inventory.id }}">{{ inventory.nama }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="user_id" class="form-label">Peminjam</label>
+                    <select class="form-control" id="user_id" name="user_id" required>
+                        <option value="">Pilih User</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="borrow_date" class="form-label">Tanggal Peminjaman</label>
+                    <input type="date" class="form-control" id="borrow_date" name="borrow_date" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Simpan</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let today = new Date().toISOString().split("T")[0];
+        document.getElementById("borrow_date").value = today;
+    });
+</script>
+
+{% endblock %}

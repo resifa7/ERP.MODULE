@@ -13,8 +13,7 @@ const createUsersTableQuery = `
 `;
 
 const createActivityLogsTableQuery = `
-
-    CREATE TABLE activity_logs (
+    CREATE TABLE IF NOT EXISTS activity_logs (
         id INT PRIMARY KEY AUTO_INCREMENT,
         user_id INT,
         activity VARCHAR(255) NOT NULL,
@@ -25,7 +24,6 @@ const createActivityLogsTableQuery = `
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
-
 `;
 
 const createInventoriesTableQuery = `
@@ -60,26 +58,54 @@ const createInventoryStatusesTableQuery = `
     );
 `;
 
+const createBorrowingsTableQuery = `
+    CREATE TABLE IF NOT EXISTS borrowings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        inventory_id INT NOT NULL,
+        user_id INT NOT NULL,
+        borrow_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        return_date TIMESTAMP NULL,
+        status ENUM('Dipinjam', 'Dikembalikan') DEFAULT 'Dipinjam',
+        FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+`;
+
 async function runMigration() {
-  try {
-    await db.query("DROP TABLE IF EXISTS activity_logs, users");
-    await db.query(createUsersTableQuery);
-    console.log("Users table created"); 
-    await db.query(createActivityLogsTableQuery);
-    console.log("Activity logs table created");
-    await db.query("DROP TABLE IF EXISTS inventories, inventory_logs, inventory_statuses");
-    await db.query(createInventoriesTableQuery);
-    console.log("Inventories table created");
-    await db.query(createInventoryLogsTableQuery);
-    console.log("Inventory logs table created");
-    await db.query(createInventoryStatusesTableQuery);
-    console.log("Inventory statuses table created");
-    console.log("Migration completed successfully");
-  } catch (err) {
-    console.error("Error running migration:", err);
-  } finally {
-    await db.end();
-  }
+    try {
+        console.log("Dropping existing tables...");
+        await db.query("DROP TABLE IF EXISTS borrowings, inventory_logs, inventory_statuses, inventories, activity_logs, users");
+
+        console.log("Creating users table...");
+        await db.query(createUsersTableQuery);
+        console.log("Users table created");
+
+        console.log("Creating activity logs table...");
+        await db.query(createActivityLogsTableQuery);
+        console.log("Activity logs table created");
+
+        console.log("Creating inventories table...");
+        await db.query(createInventoriesTableQuery);
+        console.log("Inventories table created");
+
+        console.log("Creating inventory logs table...");
+        await db.query(createInventoryLogsTableQuery);
+        console.log("Inventory logs table created");
+
+        console.log("Creating inventory statuses table...");
+        await db.query(createInventoryStatusesTableQuery);
+        console.log("Inventory statuses table created");
+
+        console.log("Creating borrowings table...");
+        await db.query(createBorrowingsTableQuery);
+        console.log("Borrowings table created");
+
+        console.log("Migration completed successfully");
+    } catch (err) {
+        console.error("Error running migration:", err);
+    } finally {
+        await db.end();
+    }
 }
 
 runMigration();

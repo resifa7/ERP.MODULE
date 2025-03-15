@@ -6,11 +6,19 @@ This is a simple ERP module that allows you to manage inventory. It is built usi
 
 * Make sure you have Node.js installed on your system.
 
-## Running the Project
+## Running the Project in Production
 
 * To run the project, navigate to the project directory and execute the following command:
   ```bash
-  node ./server.js
+  npm run start
+    ```
+* The server will start running on port 1234.
+
+## Running the Project in Development
+
+* To run the project, navigate to the project directory and execute the following command:
+  ```bash
+  npm run dev
     ```
 * The server will start running on port 1234.
 
@@ -18,7 +26,7 @@ This is a simple ERP module that allows you to manage inventory. It is built usi
 
 * To migrate the database, navigate to the project directory and execute the following command:
   ```bash
-  node ./db/migrate.js
+  npm run migrate
     ```
 * The database will be migrated.
 
@@ -26,6 +34,6 @@ This is a simple ERP module that allows you to manage inventory. It is built usi
 
 * To seed the database, navigate to the project directory and execute the following command:
   ```bash
-  node ./db/seed.js
+  npm run seed
     ```
 * The database will be seeded.
