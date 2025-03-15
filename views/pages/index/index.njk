@@ -65,12 +65,12 @@
             <nav aria-label="User pagination">
               <ul class="pagination pagination-sm mb-0">
                 <li class="page-item {% if userPage == 1 %}disabled{% endif %}">
-                  <a class="page-link" href="#" onclick="changePage('user', 1)" aria-label="First">
+                  <a class="page-link user-pagination" href="#" data-page="1" data-type="user" aria-label="First">
                     <span aria-hidden="true">&laquo;&laquo;</span>
                   </a>
                 </li>
                 <li class="page-item {% if userPage == 1 %}disabled{% endif %}">
-                  <a class="page-link" href="#" onclick="changePage('user', {{ userPage - 1 }})" aria-label="Previous">
+                  <a class="page-link user-pagination" href="#" data-page="{{ userPage - 1 }}" data-type="user" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                   </a>
                 </li>
@@ -82,7 +82,7 @@
                     (i >= userPage - 1 and i <= userPage + 1)
                   %}
                     <li class="page-item {% if userPage == i %}active{% endif %}">
-                      <a class="page-link" href="#" onclick="changePage('user', {{ i }})">{{ i }}</a>
+                      <a class="page-link user-pagination" href="#" data-page="{{ i }}" data-type="user">{{ i }}</a>
                     </li>
                   {% elif 
                     (i == 2 and userPage > 3) or 
@@ -95,12 +95,12 @@
                 {% endfor %}
                 
                 <li class="page-item {% if userPage == userTotalPages %}disabled{% endif %}">
-                  <a class="page-link" href="#" onclick="changePage('user', {{ userPage + 1 }})" aria-label="Next">
+                  <a class="page-link user-pagination" href="#" data-page="{{ userPage + 1 }}" data-type="user" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                   </a>
                 </li>
                 <li class="page-item {% if userPage == userTotalPages %}disabled{% endif %}">
-                  <a class="page-link" href="#" onclick="changePage('user', {{ userTotalPages }})" aria-label="Last">
+                  <a class="page-link user-pagination" href="#" data-page="{{ userTotalPages }}" data-type="user" aria-label="Last">
                     <span aria-hidden="true">&raquo;&raquo;</span>
                   </a>
                 </li>
@@ -179,12 +179,12 @@
             <nav aria-label="Inventory pagination">
               <ul class="pagination pagination-sm mb-0">
                 <li class="page-item {% if inventoryPage == 1 %}disabled{% endif %}">
-                  <a class="page-link" href="#" onclick="changePage('inventory', 1)" aria-label="First">
+                  <a class="page-link inventory-pagination" href="#" data-page="1" data-type="inventory" aria-label="First">
                     <span aria-hidden="true">&laquo;&laquo;</span>
                   </a>
                 </li>
                 <li class="page-item {% if inventoryPage == 1 %}disabled{% endif %}">
-                  <a class="page-link" href="#" onclick="changePage('inventory', {{ inventoryPage - 1 }})" aria-label="Previous">
+                  <a class="page-link inventory-pagination" href="#" data-page="{{ inventoryPage - 1 }}" data-type="inventory" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                   </a>
                 </li>
@@ -196,7 +196,7 @@
                     (i >= inventoryPage - 1 and i <= inventoryPage + 1)
                   %}
                     <li class="page-item {% if inventoryPage == i %}active{% endif %}">
-                      <a class="page-link" href="#" onclick="changePage('inventory', {{ i }})">{{ i }}</a>
+                      <a class="page-link inventory-pagination" href="#" data-page="{{ i }}" data-type="inventory">{{ i }}</a>
                     </li>
                   {% elif 
                     (i == 2 and inventoryPage > 3) or 
@@ -209,12 +209,12 @@
                 {% endfor %}
                 
                 <li class="page-item {% if inventoryPage == inventoryTotalPages %}disabled{% endif %}">
-                  <a class="page-link" href="#" onclick="changePage('inventory', {{ inventoryPage + 1 }})" aria-label="Next">
+                  <a class="page-link inventory-pagination" href="#" data-page="{{ inventoryPage + 1 }}" data-type="inventory" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                   </a>
                 </li>
                 <li class="page-item {% if inventoryPage == inventoryTotalPages %}disabled{% endif %}">
-                  <a class="page-link" href="#" onclick="changePage('inventory', {{ inventoryTotalPages }})" aria-label="Last">
+                  <a class="page-link inventory-pagination" href="#" data-page="{{ inventoryTotalPages }}" data-type="inventory" aria-label="Last">
                     <span aria-hidden="true">&raquo;&raquo;</span>
                   </a>
                 </li>
@@ -287,6 +287,22 @@
     let userSearchTimer;
     let inventorySearchTimer;
     const searchDelay = 500; 
+
+    document.querySelectorAll('.user-pagination').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const page = this.getAttribute('data-page');
+        changePage('user', page);
+      });
+    });
+    
+    document.querySelectorAll('.inventory-pagination').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const page = this.getAttribute('data-page');
+        changePage('inventory', page);
+      });
+    });
     
     function performUserSearch() {
       const searchTerm = document.getElementById('userSearchInput').value;
