@@ -185,8 +185,9 @@
             <label for="role" class="form-label">Role:</label>
             <select class="form-control" id="role" name="role" required>
               <option value="">Pilih Role</option>
-              <option value="Admin">Admin</option>
               <option value="User">User</option>
+              <option value="Admin">Admin</option>
+              <option value="Manager">Manager</option>
             </select>
           </div>
         </div>
@@ -229,7 +230,25 @@
 {% endblock %} {% block scripts %}
 <script>
   $(document).ready(function () {
-    $("#datatablesSimple").DataTable()
+    $("#datatablesSimple").DataTable({
+      responsive: true,
+      language: {
+        search: "Search:",
+        lengthMenu: "Tampilkan _MENU_ data",
+        zeroRecords: "Tidak ada data yang ditemukan",
+        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+        infoEmpty: "Tidak ada data yang tersedia",
+        infoFiltered: "(disaring dari _MAX_ total data)",
+        paginate: {
+          first: "<i class='fas fa-angle-double-left'></i>",
+          last: "<i class='fas fa-angle-double-right'></i>",
+          next: "<i class='fas fa-chevron-right'></i>",
+          previous: "<i class='fas fa-chevron-left'></i>"
+        }
+      },
+      pageLength: 5,
+      lengthMenu: [5, 10, 25, 50, 100]
+    })
   })
 
   $("#btnDownloadTemplate").on("click", function () {
