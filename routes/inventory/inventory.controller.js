@@ -409,6 +409,12 @@ const bulkInsertInventory = async (req, res) => {
             [dataToInsert]
         );
 
+        const statuses = dataToInsert.map((_, index) => [result.insertId + index, "Tersedia", new Date().toISOString().split("T")[0]]);
+        await db.query(
+            "INSERT INTO inventory_statuses (inventory_id, status, created_at) VALUES ?",
+            [statuses]
+        );
+
         fs.unlinkSync(req.file.path);
 
         req.flash("success", `${result.affectedRows} inventory items added successfully`);
