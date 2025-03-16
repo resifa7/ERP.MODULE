@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container px-4">
     <form action="/inventory/update/{{ inventory.id }}" method="post" class="shadow p-3 rounded" id="editInventoryForm">
-        <h2 class="mb-3">Tambah Barang Baru</h2>
+        <h2 class="mb-3">Edit Barang</h2>
         <div class="mb-2">
             <label for="nama" class="form-label">Nama Barang:</label>
             <input type="text" class="form-control" id="nama" name="nama" required value="{{ inventory.nama }}" placeholder= "Masukkan nama barang">
@@ -28,7 +28,7 @@
                 <option value="Dipinjam" {% if status == "Dipinjam" %}selected{% endif %}>Dipinjam</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Edit Barang</button>
+        <button type="submit" class="btn btn-primary">Update Barang</button>
     </form>
 </div>
 
