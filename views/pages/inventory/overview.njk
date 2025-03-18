@@ -288,6 +288,44 @@
         document.getElementById("btnTambah").addEventListener("click", () => {
             window.location.href = "/inventory/add";
         });
+
+        // QR Code button functionality
+        document
+            .querySelectorAll('.qr-btn')
+            .forEach(button => {
+                button.addEventListener('click', async function () {
+                    const id = this.getAttribute('data-id');
+                    const nama = this.getAttribute('data-name');
+                    const deskripsi = this.getAttribute('data-desc');
+                    console.log('QR Button Clicked, ID:', id); // Debug: Pastikan ID benar
+
+                    try {
+                        console.log('Fetching QR code from:', `/inventory/generate-qr/${id}`);
+                        const response = await fetch(`/inventory/generate-qr/${id}`);
+                        console.log('Response Status:', response.status); // Debug: Status HTTP
+                        console.log('Response OK:', response.ok); // Debug: Apakah berhasil (200-299)
+
+                        const data = await response.json();
+                        console.log('Response Data:', data); // Debug: Lihat isi respons
+
+                        if (data.imageUrl) {
+                            Swal.fire({
+                                title: "QR Code",
+                                text: `QR Code untuk detail item ${nama} (${deskripsi})`,
+                                imageUrl: data.imageUrl,
+                                imageWidth: 200,
+                                imageHeight: 200,
+                                imageAlt: "QR Code"
+                            });
+                        } else {
+                            Swal.fire({title: "Error", text: "Gagal menghasilkan QR code: Tidak ada imageUrl", icon: "error"});
+                        }
+                    } catch (error) {
+                        console.error('Fetch Error:', error); // Debug: Tangkap kesalahan
+                        Swal.fire({title: "Error", text: "Terjadi kesalahan saat menghasilkan QR code", icon: "error"});
+                    }
+                });
+            });
     </script>
 {% endblock %}
 
