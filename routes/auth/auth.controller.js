@@ -5,11 +5,12 @@ const UAParser = require("ua-parser-js");
 const { getClientIP } = require("../../helpers/getClientIP");
 
 const getLoginPage = (req, res) => {
-  res.render("pages/auth/login");
+  const redirect = req.query.redirect || '/';
+  res.render("pages/auth/login", { redirect });
 };
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, redirect } = req.body;
 
   if (!email || !password) {
     req.flash("error", "Email and password are required");
@@ -81,7 +82,9 @@ const login = async (req, res) => {
     );
 
     req.flash("success", "Berhasil login!");
-    return res.redirect("/");
+
+    const redirectTo = redirect || '/';
+    return res.redirect(redirectTo);
   } catch (err) {
     console.error("Login error:", err);
 

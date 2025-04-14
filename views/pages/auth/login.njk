@@ -32,6 +32,9 @@
                   <div class="card-body">
                     {% include "components/alert_flash_message.njk" %}
                     <form action="/login" method="post">
+                      <!-- Hidden field for redirect -->
+                      <input type="hidden" name="redirect" value="{{redirect}}" />
+
                       <div class="form-floating mb-3">
                         <input
                           class="form-control"

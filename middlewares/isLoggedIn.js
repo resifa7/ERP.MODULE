@@ -1,12 +1,15 @@
 const isLoggedIn = (req, res, next) => {
+  if (req.method === 'GET') {
     if (req.session.user) {
       next();
     } else {
-      res.redirect("/login");
+      const redirect = req.originalUrl;
+      res.redirect(`/login?redirect=${encodeURIComponent(redirect)}`);
     }
-  };
-  
-  module.exports = {
-    isLoggedIn,
-  };
-  
+  } else {
+    next();
+  }
+};
+module.exports = {
+  isLoggedIn,
+};
