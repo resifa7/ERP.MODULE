@@ -1,0 +1,181 @@
+{% extends "layout/masterLayout.njk" %}
+{% block content %}
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Permintaan Peminjaman</h1>
+
+    <!-- Flash Messages -->
+    {% if success %}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ success }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+    {% if error %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            Daftar Permintaan Peminjaman
+        </div>
+        <div class="card-body">
+            <table id="requestsTable" class="table table-striped table-bordered table-hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>ID Peminjaman</th>
+                        <th>Barang</th>
+                        <th>Peminjam</th>
+                        <th>Tanggal Peminjaman</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in requests %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>#{{ request.id }}</strong></td>
+                        <td>{{ request.inventory_name }}</td>
+                        <td>{{ request.username }}</td>
+                        <td>{{ request.borrow_date }}</td>
+                        <td>
+                            {% if request.status == 'Diajukan' %}
+                                <span class="badge bg-info text-dark">Diajukan</span>
+                            {% else %}
+                                <span class="badge bg-success">Disetujui</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if request.status == 'Diajukan' %}
+                                <button class="btn btn-primary btn-sm approve-btn" 
+                                        data-request-id="{{ request.id }}" 
+                                        data-request-name="{{ request.inventory_name }}">
+                                    Setujui
+                                </button>
+                                <button class="btn btn-danger btn-sm reject-btn" 
+                                        data-request-id="{{ request.id }}" 
+                                        data-request-name="{{ request.inventory_name }}">
+                                    Tolak
+                                </button>
+                            {% else %}
+                                <button class="btn btn-secondary btn-sm" disabled>Sudah Diproses</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Persetujuan -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="approveForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approveModalLabel">Konfirmasi Persetujuan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin <strong>menyetujui</strong> permintaan ini?</p>
+                    <input type="hidden" id="request_id" name="request_id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Setujui</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Penolakan -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="rejectForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel">Konfirmasi Penolakan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin <strong>menolak</strong> permintaan ini?</p>
+                    <input type="hidden" id="reject_request_id" name="request_id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Tolak</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        $('#requestsTable').DataTable({
+            responsive: true,
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ data",
+                zeroRecords: "Tidak ada data yang ditemukan",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                infoEmpty: "Tidak ada data yang tersedia",
+                infoFiltered: "(disaring dari _MAX_ total data)",
+                paginate: {
+                    first: "<i class='fas fa-angle-double-left'></i>",
+                    last: "<i class='fas fa-angle-double-right'></i>",
+                    next: "<i class='fas fa-chevron-right'></i>",
+                    previous: "<i class='fas fa-chevron-left'></i>"
+                }
+            },
+            pageLength: 5,
+            lengthMenu: [5, 10, 25, 50, 100]
+        });
+
+        let approveForm = document.getElementById("approveForm");
+        let rejectForm = document.getElementById("rejectForm");
+        let approveModal = new bootstrap.Modal(document.getElementById("approveModal"));
+        let rejectModal = new bootstrap.Modal(document.getElementById("rejectModal"));
+        let requestIdInput = document.getElementById("request_id");
+        let rejectRequestIdInput = document.getElementById("reject_request_id");
+
+        let today = new Date().toISOString().split("T")[0];
+
+        document.querySelectorAll(".approve-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let requestId = this.getAttribute("data-request-id");
+                let itemName = this.getAttribute("data-request-name");
+
+                requestIdInput.value = requestId;
+                approveForm.action = `/borrowings/request/approve/${requestId}`;
+
+                approveModal.show();
+            });
+        });
+
+        document.querySelectorAll(".reject-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let requestId = this.getAttribute("data-request-id");
+                let itemName = this.getAttribute("data-request-name");
+
+                rejectRequestIdInput.value = requestId;
+                rejectForm.action = `/borrowings/request/reject/${requestId}`;
+
+                rejectModal.show();
+            });
+        });
+    });
+</script>
+{% endblock %}

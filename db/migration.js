@@ -65,7 +65,7 @@ const createBorrowingsTableQuery = `
         user_id INT NOT NULL,
         borrow_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         return_date TIMESTAMP NULL,
-        status ENUM('Dipinjam', 'Dikembalikan') DEFAULT 'Dipinjam',
+        status ENUM('Dipinjam', 'Dikembalikan', 'Diajukan', 'Ditolak') DEFAULT 'Dipinjam',
         FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );

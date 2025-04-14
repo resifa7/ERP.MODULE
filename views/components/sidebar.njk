@@ -11,7 +11,8 @@
         { "title": "Inventory", "icon": "fas fa-boxes", "url": "#", "submenus": [
             { "title": "List Barang", "url": "/inventory/overview" },
             { "title": "Status Barang", "url": "/inventory/status" },
-            { "title": "Buat Pinjaman", "url": "/borrowings/add" },
+            { "title": "Buat Peminjaman", "url": "/borrowings/add" },
+            { "title": "Pemintaan Peminjaman", "url": "/borrowings/request" },
             { "title": "Pengembalian Pinjaman", "url": "/borrowings/return" }, 
             { "title": "Riwayat Peminjaman", "url": "/borrowings" }
         ], "activeCheck": "/inventory" },
@@ -20,6 +21,13 @@
             { "title": "User Overview ", "url": "/user/overview" }
         ], "activeCheck": "/Internal" },
         { "title": "Log", "icon": "fas fa-history", "url": "/log/index" }
+    ]) %}
+{% elif user.role == 'User' %}
+    {% set sidebarMenu = sidebarMenu.concat([
+        { "title": "Peminjaman", "icon": "fas fa-hand-holding", "url": "#", "submenus": [
+            { "title": "Ajukan Peminjaman", "url": "/borrowings/add" },
+            { "title": "Riwayat Peminjaman", "url": "/borrowings" }
+        ], "activeCheck": "/borrowings" }
     ]) %}
 {% endif %}
 

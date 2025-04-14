@@ -46,9 +46,13 @@
                         <td>{{ borrow.borrow_date }}</td>
                         <td>{{ borrow.return_date }}</td>
                         <td>
-                            {% if borrow.status == 'Dipinjam' %}
+                            {% if borrow.status == 'Diajukan' %}
+                                <span class="badge bg-info text-dark">Diajukan</span>
+                            {% elif borrow.status == 'Dipinjam' %}
                                 <span class="badge bg-warning text-dark">Dipinjam</span>
-                            {% else %}
+                            {% elif borrow.status == 'Ditolak' %}
+                                <span class="badge bg-danger text-white">Ditolak</span>
+                            {% elif borrow.status == 'Dikembalikan' %}
                                 <span class="badge bg-success">Dikembalikan</span>
                             {% endif %}
                         </td>
