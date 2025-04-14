@@ -39,11 +39,17 @@ async function log(message, level = LOG_LEVELS.INFO, user_id = null, userAgentDa
 
   console.log(detailedLogMessage);
 
-  const logFilePath = path.join(__dirname, '..', 'logs', 'app.log');
-  if (!fs.existsSync(path.dirname(logFilePath))) {
-    fs.mkdirSync(path.dirname(logFilePath), { recursive: true });
+  if (!process.env.VERCEL) {
+    try {
+      const logFilePath = path.join(__dirname, '..', 'logs', 'app.log');
+      if (!fs.existsSync(path.dirname(logFilePath))) {
+        fs.mkdirSync(path.dirname(logFilePath), { recursive: true });
+      }
+      fs.appendFileSync(logFilePath, detailedLogMessage + '\n', 'utf8');
+    } catch (err) {
+      console.error("Error writing to log file:", err);
+    }
   }
-  fs.appendFileSync(logFilePath, detailedLogMessage + '\n', 'utf8');
 
   try {
     await db.query(

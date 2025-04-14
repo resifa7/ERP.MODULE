@@ -373,6 +373,11 @@ const bulkInsertInventory = async (req, res) => {
 
         let dataToInsert = [];
 
+        if (req.file.buffer) {
+            await workbook.xlsx.load(req.file.buffer);
+        } else {
+            await workbook.xlsx.readFile(req.file.path);
+        }
         worksheet.eachRow((row, rowNumber) => {
             if (rowNumber === 1) return;
 
@@ -397,7 +402,7 @@ const bulkInsertInventory = async (req, res) => {
 
             dataToInsert.push([nama, deskripsi, tanggal_pembelian, harga_pembelian]);
         });
-
+        
         if (dataToInsert.length === 0) {
             req.flash("error", "No valid data to insert");
             fs.unlinkSync(req.file.path);
@@ -415,12 +420,17 @@ const bulkInsertInventory = async (req, res) => {
             [statuses]
         );
 
-        fs.unlinkSync(req.file.path);
+        if (req.file.path && !req.file.buffer) {
+            fs.unlinkSync(req.file.path);
+        }
 
         req.flash("success", `${result.affectedRows} inventory items added successfully`);
         res.redirect("/inventory/overview");
     } catch (error) {
         console.error("Error in bulkInsertInventory:", error);
+        if (req.file.path && !req.file.buffer) {
+            fs.unlinkSync(req.file.path);
+        }
         req.flash("error", "Failed to process file");
         res.redirect("/inventory/overview");
     }
