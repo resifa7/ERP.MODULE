@@ -4,7 +4,7 @@ const multer = require("multer");
 
 const user = require("./user.controller");
 
-const upload = multer({ dest: "uploads/" });
+const upload = require('../../multer');
 
 router.get("/user/index", user.getAllUsersPage);
 router.get("/user/overview", user.getUserOverviewPage);
