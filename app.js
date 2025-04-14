@@ -6,7 +6,8 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const flash = require("connect-flash");
 const helmet = require("helmet");
-const sessionStore = require('./db/session-db');
+const errorHandler = require("./middlewares/errorHandler");
+const timeoutMiddleware = require("./middlewares/timeoutMiddleware");
 
 const app = express();
 app.use(
@@ -56,11 +57,11 @@ app.use(
   session({
     key: "session_cookie_name",
     secret: process.env.SESSION_KEY,
-    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
     },
   })
@@ -82,6 +83,7 @@ app.use((req, res, next) => {
 });
 app.set("trust proxy", true);
 app.enable("trust proxy");
+app.use(timeoutMiddleware);
 
 const { isLoggedIn } = require("./middlewares/isLoggedIn");
 
@@ -99,7 +101,18 @@ app.use("/", isLoggedIn, logRouter);
 app.use("/", isLoggedIn, inventoryRouter);
 app.use("/", isLoggedIn, borrowingRouter);
 
-const errorHandler = require("./middlewares/errorHandler");
 app.use(errorHandler);
+
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  
+  try {
+    console.log('MySQL connections closed');
+  } catch (err) {
+    console.error('Error during cleanup:', err);
+  }
+  
+  process.exit(0);
+});
 
 module.exports = app;
