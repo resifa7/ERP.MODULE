@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const flash = require("connect-flash");
 const helmet = require("helmet");
+const sessionStore = require('./db/session-db');
 
 const app = express();
 app.use(
@@ -53,7 +54,9 @@ app.set("view engine", "njk");
 app.use(morgan("combined"));
 app.use(
   session({
+    key: "session_cookie_name",
     secret: process.env.SESSION_KEY,
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
